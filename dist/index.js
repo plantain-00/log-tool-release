@@ -1,0 +1,27 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const libs = require("./libs");
+const watcher = require("./watcher");
+const gui = require("./gui");
+const inflow = require("./inflow");
+const outflow = require("./outflow");
+const elastic = require("./elastic");
+const format = require("./format");
+const sqlite = require("./sqlite");
+const folderSizeWatcher = require("./folderSizeWatcher");
+const countLogs = require("./countLogs");
+const os = require("./os");
+watcher.start();
+gui.start();
+inflow.start();
+outflow.start();
+elastic.start();
+format.start();
+sqlite.start();
+folderSizeWatcher.start();
+countLogs.start();
+os.start();
+libs.print("log tool started.");
+libs.logSubject.subscribe(log => {
+    libs.print(log);
+});

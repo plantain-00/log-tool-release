@@ -1,0 +1,16 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createTableElasticLogsSql = `CREATE TABLE elastic_logs (value)`;
+exports.createTableOutflowLogsSql = `CREATE TABLE outflow_logs (value)`;
+exports.createTableSampleSql = `CREATE TABLE samples (time, value)`;
+exports.deleteElasticLogsSql = `DELETE FROM elastic_logs WHERE ROWID = ?`;
+exports.deleteOutflowLogsSql = `DELETE FROM outflow_logs WHERE ROWID = ?`;
+exports.queryElasticLogsSql = `SELECT ROWID, value from elastic_logs`;
+exports.queryOutflowLogsSql = `SELECT ROWID, value from outflow_logs`;
+exports.querySamplesSql = `SELECT time, value from samples WHERE time >= ? and time <= ? ORDER BY time ASC`;
+exports.queryTableElasticLogsExistsSql = `SELECT COUNT(*) as count FROM sqlite_master WHERE type = 'table' AND name = 'elastic_logs'`;
+exports.queryTableOutflowLogsExistsSql = `SELECT COUNT(*) as count FROM sqlite_master WHERE type = 'table' AND name = 'outflow_logs'`;
+exports.queryTableSamplesExistsSql = `SELECT COUNT(*) as count FROM sqlite_master WHERE type = 'table' AND name = 'samples'`;
+exports.saveElasticLogsSql = `INSERT INTO elastic_logs (value) values (?)`;
+exports.saveOutflowLogsSql = `INSERT INTO outflow_logs (value) values (?)`;
+exports.saveSampleSql = `INSERT INTO samples (time, value) VALUES (?, ?);`;
