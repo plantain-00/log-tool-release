@@ -41,7 +41,7 @@
     "@types/ws": "3.0.0",
     "chart.js": "2.6.0",
     "clean-css-cli": "4.1.6",
-    "clean-release": "1.1.1",
+    "clean-release": "1.2.1",
     "file2variable-cli": "1.4.0",
     "github-fork-ribbon-css": "0.2.1",
     "jasmine": "2.6.0",
