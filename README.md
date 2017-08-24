@@ -1,6 +1,7 @@
 [![Dependency Status](https://david-dm.org/plantain-00/log-tool.svg)](https://david-dm.org/plantain-00/log-tool)
 [![devDependency Status](https://david-dm.org/plantain-00/log-tool/dev-status.svg)](https://david-dm.org/plantain-00/log-tool#info=devDependencies)
-[![Build Status](https://travis-ci.org/plantain-00/log-tool.svg?branch=master)](https://travis-ci.org/plantain-00/log-tool)
+[![Build Status: Linux](https://travis-ci.org/plantain-00/log-tool.svg?branch=master)](https://travis-ci.org/plantain-00/log-tool)
+[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/plantain-00/log-tool?branch=master&svg=true)](https://ci.appveyor.com/project/plantain-00/log-tool/branch/master)
 
 # log-tool
 
@@ -37,7 +38,7 @@ the default configuration file is `./log-tool.config.js`, it's in: [./log-tool.c
 
 #### protocol
 
-The message should be a string from `JSON.stringify(protocol)`(json schema: [./static/protocol.json](https://github.com/plantain-00/log-tool/blob/master/static/protocol.json))
+The message should be a string from `JSON.stringify(protocol)`(json schema: [./static/protocol.json](https://github.com/plantain-00/log-tool/blob/master/static/flow-protocol.json))
 
 Or a protobuf encoded binary(protobuf file: [./static/protocol.proto](https://github.com/plantain-00/log-tool/blob/master/static/protocol.proto)).
 

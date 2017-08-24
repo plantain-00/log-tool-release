@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const libs = require("./libs");
 const config = require("./config");
-const types = require("./types");
 const format = require("./format");
 const sqlite = require("./sqlite");
 function start() {
@@ -12,11 +11,7 @@ function start() {
     let ws;
     let sender;
     const subscription = libs.bufferedFlowObservable.subscribe(flows => {
-        const protocol = {
-            kind: "flows" /* flows */,
-            flows,
-        };
-        const message = format.encode(protocol);
+        const message = format.encodeFlow({ flows });
         if (ws && ws.readyState === ws.OPEN && sender) {
             sender.send(message, { binary: config.protobuf.enabled, mask: true }, isSuccess => {
                 if (!isSuccess) {

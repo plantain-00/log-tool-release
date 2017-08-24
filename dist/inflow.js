@@ -14,18 +14,19 @@ function start() {
     app.use(libs.bodyParser.json());
     app.post(config.inflow.httpFallbackPath, (request, response) => {
         const protocol = request.body;
-        if (protocol) {
+        const isValidJson = libs.validateFlowProtocol(protocol);
+        if (isValidJson) {
             handleMessage(protocol);
             response.end("accepted");
         }
         else {
-            response.end("unrecognised body");
+            response.end(libs.validateFlowProtocol.errors[0].message);
         }
     });
     wss.on("connection", ws => {
         ws.on("message", (inflowString, flag) => {
             try {
-                const protocol = format.decode(inflowString);
+                const protocol = format.decodeFlow(inflowString);
                 handleMessage(protocol);
             }
             catch (error) {
@@ -38,14 +39,12 @@ function start() {
 }
 exports.start = start;
 function handleMessage(protocol) {
-    if (protocol.kind === "flows" /* flows */ && protocol.flows) {
-        for (const flow of protocol.flows) {
-            if (flow.kind === "log" /* log */) {
-                libs.logSubject.next(flow.log);
-            }
-            else if (flow.kind === "sample" /* sample */) {
-                libs.sampleSubject.next(flow.sample);
-            }
+    for (const flow of protocol.flows) {
+        if (flow.kind === "log" /* log */) {
+            libs.logSubject.next(flow.log);
+        }
+        else if (flow.kind === "sample" /* sample */) {
+            libs.sampleSubject.next(flow.sample);
         }
     }
 }

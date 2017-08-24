@@ -76,10 +76,10 @@ function fileOrDirectoryChanged(pathname) {
 }
 function readNewlyAddedLogsThenPublish(filepath, end) {
     const position = positions[filepath];
-    const start = position === undefined ? 0 : position;
-    if (end > start) {
+    const startPosition = position === undefined ? 0 : position;
+    if (end > startPosition) {
         libs.fs.createReadStream(filepath, {
-            start,
+            start: startPosition,
             end,
             encoding: "utf8",
         }).on("data", (fileContentChanged) => {

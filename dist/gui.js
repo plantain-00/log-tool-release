@@ -27,12 +27,13 @@ function start() {
     });
     wss.on("connection", ws => {
         const subscription = libs.bufferedFlowObservable.subscribe(flows => {
-            const protocol = {
+            ws.send(format.encodeResponse({
                 kind: "flows" /* flows */,
-                serverTime: libs.getNow(),
-                flows,
-            };
-            ws.send(format.encode(protocol), { binary: config.protobuf.enabled });
+                flows: {
+                    serverTime: libs.getNow(),
+                    flows,
+                },
+            }), { binary: config.protobuf.enabled });
         });
         ws.on("close", (code, name) => {
             subscription.unsubscribe();
@@ -40,82 +41,63 @@ function start() {
         if (config.elastic.enabled) {
             ws.on("message", (data, flag) => {
                 try {
-                    const protocol = format.decode(data);
-                    if (protocol.kind === "search" /* search */) {
-                        if (protocol.search) {
-                            elastic.search(protocol.search.content, protocol.search.time, protocol.search.hostname, protocol.search.from, protocol.search.size).then(result => {
-                                const searchResult = {
-                                    kind: "search result" /* searchResult */,
-                                    requestId: protocol.requestId,
-                                    searchResult: result,
-                                };
-                                ws.send(format.encode(searchResult), { binary: config.protobuf.enabled });
-                            }, (error) => {
-                                const searchResult = {
-                                    kind: "search result" /* searchResult */,
+                    const protocol = format.decodeRequest(data);
+                    if (protocol.kind === "search logs" /* searchLogs */) {
+                        elastic.search(protocol.searchLogs, protocol.requestId).then(result => {
+                            ws.send(format.encodeResponse({
+                                kind: "search logs result" /* searchLogsResult */,
+                                searchLogsResult: result,
+                            }), { binary: config.protobuf.enabled });
+                        }, (error) => {
+                            ws.send(format.encodeResponse({
+                                kind: "search logs result" /* searchLogsResult */,
+                                searchLogsResult: {
+                                    kind: "fail" /* fail */,
                                     requestId: protocol.requestId,
                                     error: error.message,
-                                };
-                                ws.send(format.encode(searchResult), { binary: config.protobuf.enabled });
-                            });
-                        }
-                        else {
-                            const searchResult = {
-                                kind: "search result" /* searchResult */,
-                                requestId: protocol.requestId,
-                                error: "no parameter",
-                            };
-                            ws.send(format.encode(searchResult), { binary: config.protobuf.enabled });
-                        }
+                                },
+                            }), { binary: config.protobuf.enabled });
+                        });
                     }
                     else if (protocol.kind === "resave failed logs" /* resaveFailedLogs */) {
-                        elastic.resaveFailedLogs().then(result => {
-                            const resaveFailedLogsResult = {
+                        elastic.resaveFailedLogs(protocol.requestId).then(result => {
+                            ws.send(format.encodeResponse({
                                 kind: "resave failed logs result" /* resaveFailedLogsResult */,
-                                requestId: protocol.requestId,
                                 resaveFailedLogsResult: result,
-                            };
-                            ws.send(format.encode(resaveFailedLogsResult), { binary: config.protobuf.enabled });
+                            }), { binary: config.protobuf.enabled });
                         }, error => {
-                            const resaveFailedLogsResult = {
+                            ws.send(format.encodeResponse({
                                 kind: "resave failed logs result" /* resaveFailedLogsResult */,
-                                requestId: protocol.requestId,
-                                error: error.message,
-                            };
-                            ws.send(format.encode(resaveFailedLogsResult), { binary: config.protobuf.enabled });
+                                resaveFailedLogsResult: {
+                                    kind: "fail" /* fail */,
+                                    requestId: protocol.requestId,
+                                    error: error.message,
+                                },
+                            }), { binary: config.protobuf.enabled });
                         });
                     }
                     else if (protocol.kind === "search samples" /* searchSamples */) {
-                        if (protocol.searchSamples) {
-                            const from = Math.round(libs.moment(protocol.searchSamples.from).valueOf() / 1000);
-                            const to = Math.round(libs.moment(protocol.searchSamples.to).valueOf() / 1000);
-                            sqlite.querySamples(from, to).then(rows => {
-                                const searchSamplesResult = {
-                                    kind: "search samples result" /* searchSamplesResult */,
+                        const from = Math.round(libs.moment(protocol.searchSamples.from).valueOf() / 1000);
+                        const to = Math.round(libs.moment(protocol.searchSamples.to).valueOf() / 1000);
+                        sqlite.querySamples(from, to).then(rows => {
+                            ws.send(format.encodeResponse({
+                                kind: "search samples result" /* searchSamplesResult */,
+                                searchSamplesResult: {
+                                    kind: "success" /* success */,
                                     requestId: protocol.requestId,
                                     searchSampleResult: rows,
-                                };
-                                ws.send(format.encode(searchSamplesResult), { binary: config.protobuf.enabled });
-                            }, error => {
-                                const searchSamplesResult = {
-                                    kind: "search samples result" /* searchSamplesResult */,
+                                },
+                            }), { binary: config.protobuf.enabled });
+                        }, error => {
+                            ws.send(format.encodeResponse({
+                                kind: "search samples result" /* searchSamplesResult */,
+                                searchSamplesResult: {
+                                    kind: "fail" /* fail */,
                                     requestId: protocol.requestId,
                                     error: error.message,
-                                };
-                                ws.send(format.encode(searchSamplesResult), { binary: config.protobuf.enabled });
-                            });
-                        }
-                        else {
-                            const searchSamplesResult = {
-                                kind: "search samples result" /* searchSamplesResult */,
-                                requestId: protocol.requestId,
-                                error: "no parameter",
-                            };
-                            ws.send(format.encode(searchSamplesResult), { binary: config.protobuf.enabled });
-                        }
-                    }
-                    else {
-                        libs.publishErrorMessage(`protocol kind ${protocol.kind} is not recognized.`);
+                                },
+                            }), { binary: config.protobuf.enabled });
+                        });
                     }
                 }
                 catch (error) {
@@ -123,11 +105,10 @@ function start() {
                 }
             });
         }
-        const protocol = {
+        ws.send(format.encodeResponse({
             kind: "history samples" /* historySamples */,
             historySamples,
-        };
-        ws.send(format.encode(protocol), { binary: config.protobuf.enabled });
+        }), { binary: config.protobuf.enabled });
     });
     server.on("request", app);
     server.listen(config.gui.port, config.gui.host);

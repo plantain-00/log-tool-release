@@ -18,8 +18,8 @@ exports.http = http;
 const node_fetch_1 = require("node-fetch");
 exports.fetch = node_fetch_1.default;
 const types = require("./types");
-const nodejs_1 = require("reconnection/nodejs");
-exports.Reconnector = nodejs_1.Reconnector;
+const nodejs_1 = require("reconnection/nodejs/nodejs");
+exports.Reconnector = nodejs_1.default;
 const moment = require("moment");
 exports.moment = moment;
 const uws_1 = require("uws");
@@ -34,13 +34,15 @@ const Ajv = require("ajv");
 const _ = require("lodash");
 exports._ = _;
 const ajv = new Ajv();
-const jsonSchema = require("../static/protocol.json");
-exports.validate = ajv.compile(jsonSchema);
-function print(message) {
+const requestProtocolJsonSchema = require("../static/request-protocol.json");
+exports.validateRequestProtocol = ajv.compile(requestProtocolJsonSchema);
+const flowProtocolJsonSchema = require("../static/flow-protocol.json");
+exports.validateFlowProtocol = ajv.compile(flowProtocolJsonSchema);
+function printInConsole(message) {
     // tslint:disable-next-line:no-console
     console.log(message);
 }
-exports.print = print;
+exports.printInConsole = printInConsole;
 exports.hostname = os.hostname();
 exports.logSubject = new rxjs_1.Subject();
 exports.sampleSubject = new rxjs_1.Subject();
@@ -64,18 +66,16 @@ exports.bufferedSampleSubject = exports.sampleSubject
 exports.bufferedFlowObservable = rxjs_1.Observable.merge(exports.bufferedLogSubject
     .filter((logs) => logs.length > 0)
     .map((logs) => logs.map(log => {
-    const protocol = {
+    return {
         kind: "log" /* log */,
         log,
     };
-    return protocol;
 })), exports.bufferedSampleSubject
     .map((samples) => (samples.map((sample) => {
-    const protocol = {
+    return {
         kind: "sample" /* sample */,
         sample,
     };
-    return protocol;
 }))))
     .bufferTime(1000)
     .filter(s => s.length > 0)
