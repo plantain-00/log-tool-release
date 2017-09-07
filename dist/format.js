@@ -44,9 +44,9 @@ exports.decodeRequest = decodeRequest;
 function decodeFlow(protocol) {
     if (typeof protocol === "string") {
         const result = JSON.parse(protocol);
-        const isValidJson = libs.validateRequestProtocol(result);
+        const isValidJson = libs.validateFlowProtocol(result);
         if (!isValidJson) {
-            throw new Error(libs.validateRequestProtocol.errors[0].message);
+            throw new Error(libs.validateFlowProtocol.errors[0].message);
         }
         return result;
     }
